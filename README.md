@@ -1,5 +1,14 @@
 # CSV 合并去重工具与数据处理服务
 
+本仓库提供两类本地数据处理工具：
+
+| 工具 | 适用问题 | 交付物 |
+| --- | --- | --- |
+| [合并去重](merge.mjs) | 多个月份或来源的同表头 CSV 存在重复记录 | 合并文件及终端统计 |
+| [数据体检](DATA-AUDIT.md) | 导入前检查必填值、重复编号和数字格式 | 中文 HTML 异常报告 |
+
+[提交定制需求](https://github.com/yyygyf/csv-merge-dedupe/issues/new?template=custom-work.md) · [查看数据体检用法](DATA-AUDIT.md)
+
 适用于同表头、多文件、UTF-8 CSV 的合并去重。无需第三方依赖，使用 Node.js 22 或更高版本。这是使用 Codex 开发并测试的能力样例；没有声称客户案例或既往成交。
 
 ## 数据处理小项目询价
@@ -16,6 +25,8 @@
 node merge.mjs 订单号 merged.csv january.csv february.csv
 node merge.mjs 客户号,订单号 merged.csv export1.csv export2.csv
 node --test merge.test.mjs
+node audit.mjs orders.csv report.html --required 订单号,金额 --key 订单号 --numbers 金额
+node --test audit.test.mjs
 ```
 
 保留首次出现的记录；组合键按原始字符串精确匹配。保留前导零、中文、引号、逗号和字段内换行。输入无效、表头不一致或去重键缺失会报错；不会覆盖已有输出文件。运行成功后，终端输出输入记录数、去重数、保留数及使用的键，可保存为验收记录。
