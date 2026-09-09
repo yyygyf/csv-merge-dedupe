@@ -68,3 +68,20 @@ node compare-report.mjs --self-test
 处理实际文件：`node compare-report.mjs 主键 before.csv after.csv report.html`。组合主键使用逗号分隔。规则与 JSON 对比相同，不覆盖现有输出；报告包含原始字段值，分享前须脱敏。工具比较字符串变化，不做金额汇总或业务正确性判断。
 
 English: the main branch also includes `compare-report.mjs`, a printable HTML snapshot-difference report. It is not included in the v0.1.0 ZIP. Use the current main branch and the example above. Reports contain source values; redact before sharing.
+
+
+## 中文导出文件的编码转换（main 分支新增）
+
+现有清洗和报告工具仍只读取 UTF-8 CSV。对于已知编码的其他 CSV，可先用 `convert-encoding.mjs` 转换；下载当前 main 分支，v0.1.0 不包含此文件。
+
+```sh
+node convert-encoding.mjs gbk source.csv utf8.csv
+node audit.mjs utf8.csv report.html --key id
+node convert-encoding.mjs --self-test
+```
+
+支持显式指定 `utf-8`、`gbk`、`gb18030`、`utf-16le`、`utf-16be`；输出带 BOM 的 UTF-8、CRLF 行尾和标准 CSV 引号。保留字段字符串，包括 001 这样的编号。所有内容在内存中处理，无第三方依赖。公开版本已通过编码自检及命令行转换、拒绝覆盖、原文件保持不变的检查。
+
+此工具不自动判断编码。错误的编码选择即使成功解码也可能产生乱码，请先确认来源系统的导出设置并抽样核对。发现 BOM 与选择冲突、非法字节、NUL、重复或空表头、字段数异常会报错，且不会创建输出；已有输出也会被拒绝。它不读取 XLSX，不修复业务数据，不改变公式文本。
+
+English: `convert-encoding.mjs` converts explicitly selected GBK/GB18030/UTF-16 CSV exports to UTF-8 before using the other tools. It does not detect encodings. Validate the selected encoding and inspect representative output rows. It preserves field strings, normalizes CSV serialization, and refuses existing output paths.
