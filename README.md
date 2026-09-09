@@ -51,3 +51,20 @@ node compare.mjs --self-test
 ## English
 
 Local CSV merge/deduplication, validation and snapshot comparison. Download the release ZIP and run `node demo.mjs demo-output` with Node.js 22+. The generated report and JSON use synthetic data. No third-party dependencies. Custom automation inquiries are welcome through Issues; scope, acceptance criteria, price and payment are agreed separately. Developed with Codex; no client experience or sales is claimed.
+
+
+## 可读的变化报告（main 分支新增）
+
+`compare-report.mjs` 把两期 CSV 的新增、删除和逐字段修改生成可直接在浏览器打开、打印的中文 HTML。此工具尚不包含在 v0.1.0 发布压缩包中；请在仓库 Code 菜单下载当前 main 分支 ZIP，或克隆当前仓库后运行：
+
+```sh
+node demo.mjs demo-output
+node compare-report.mjs 订单号 demo-output/merged.csv demo-output/later.csv change-report.html
+node compare-report.mjs --self-test
+```
+
+打开 `change-report.html`，应看到前后各 3 条记录，新增、删除、修改、未变各 1 条；修改明细显示订单 002 的金额从 200 变成 250。这里全部是虚构样例。
+
+处理实际文件：`node compare-report.mjs 主键 before.csv after.csv report.html`。组合主键使用逗号分隔。规则与 JSON 对比相同，不覆盖现有输出；报告包含原始字段值，分享前须脱敏。工具比较字符串变化，不做金额汇总或业务正确性判断。
+
+English: the main branch also includes `compare-report.mjs`, a printable HTML snapshot-difference report. It is not included in the v0.1.0 ZIP. Use the current main branch and the example above. Reports contain source values; redact before sharing.
