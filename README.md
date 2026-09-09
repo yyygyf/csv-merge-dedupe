@@ -1,36 +1,53 @@
-# CSV 合并去重工具与数据处理服务
+# CSV 数据处理工具包与定制服务
 
-本仓库提供两类本地数据处理工具：
+本仓库提供三类本地工具，使用 Node.js 22+，无需第三方依赖。开发使用 Codex；这是能力样例，不是客户成交案例。
 
-| 工具 | 适用问题 | 交付物 |
+| 工具 | 适用问题 | 输出 |
 | --- | --- | --- |
-| [合并去重](merge.mjs) | 多个月份或来源的同表头 CSV 存在重复记录 | 合并文件及终端统计 |
-| [数据体检](DATA-AUDIT.md) | 导入前检查必填值、重复编号和数字格式 | 中文 HTML 异常报告 |
+| [合并去重](merge.mjs) | 同表头的多份 CSV 重复记录 | 合并 CSV 和终端统计 |
+| [数据体检](DATA-AUDIT.md) | 必填值、重复编号、数字格式、字段数异常 | 中文 HTML 报告 |
+| [快照对比](compare.mjs) | 两期订单、库存或名单变化 | 新增、删除、逐字段修改 JSON |
 
-[提交定制需求](https://github.com/yyygyf/csv-merge-dedupe/issues/new?template=custom-work.md) · [查看数据体检用法](DATA-AUDIT.md)
+[下载 v0.1.0](https://github.com/yyygyf/csv-merge-dedupe/releases/tag/v0.1.0) · [提交定制需求](https://github.com/yyygyf/csv-merge-dedupe/issues/new?template=custom-work.md)
 
-适用于同表头、多文件、UTF-8 CSV 的合并去重。无需第三方依赖，使用 Node.js 22 或更高版本。这是使用 Codex 开发并测试的能力样例；没有声称客户案例或既往成交。
+## 一键试用
 
-## 数据处理小项目询价
+下载发布页的 Source code (zip)，解压并进入该目录，运行：
 
-可讨论 CSV 字段映射、合并去重、编码转换、数据校验和定期报告脚本。先确定样本、输入输出及验收规则，再固定报价；开发使用 Codex，并交付可运行源码、使用说明和约定范围的测试。
+```sh
+node demo.mjs demo-output
+```
 
-小范围定制参考报价：人民币 199–499 元。实际价格、交付日期和付款方式须双方确认后才生效；此范围不代表所有需求均可承接。重复数据处理可另外讨论按次或定期维护。
+全部输入为虚构订单数据。打开生成的 `demo-output/audit.html` 查看异常报告，`changes.json` 查看变化，`README.md` 查看验收结果。4 条来源记录合并为 3 条；体检定位 1 条异常记录；快照对比各有 1 条新增、删除、修改及未变记录。再次运行请换一个新输出目录。
 
-请在本仓库 Issues 中说明文件格式、大致行数、处理规则和期望输出。只附虚构或脱敏样本；首次询价无需提供账号、密码或生产数据。当前没有自动下单或收款功能。
-
-## 运行样例
+## 处理自己的 CSV
 
 ```sh
 node merge.mjs 订单号 merged.csv january.csv february.csv
 node merge.mjs 客户号,订单号 merged.csv export1.csv export2.csv
-node --test merge.test.mjs
 node audit.mjs orders.csv report.html --required 订单号,金额 --key 订单号 --numbers 金额
-node --test audit.test.mjs
+node compare.mjs 订单号 before.csv after.csv changes.json
 ```
 
-保留首次出现的记录；组合键按原始字符串精确匹配。保留前导零、中文、引号、逗号和字段内换行。输入无效、表头不一致或去重键缺失会报错；不会覆盖已有输出文件。运行成功后，终端输出输入记录数、去重数、保留数及使用的键，可保存为验收记录。
+合并按原始字符串组合键保留首次记录，要求相同列名及顺序。快照对比允许列顺序不同，但要求列名集合一致，拒绝空键或重复键。工具保留前导零、中文、引号、逗号和字段内换行，不修改输入，不覆盖已有输出。
 
-限制：所有内容在内存处理；仅支持逗号分隔的 UTF-8 文件，不支持 XLSX/GBK，不自动判断重复记录冲突，不修改公式文本。Excel 打开 CSV 时仍可能自行改变数字格式；工具自身保留字符串。
+所有内容在内存处理；仅支持逗号分隔的 UTF-8 CSV，不支持 XLSX/GBK，不自动解决业务冲突，不修改公式文本。Excel 自行打开 CSV 仍可能改变数字显示格式。JSON 对比输出包含原始字段值，分享前须脱敏。
 
-可报价范围：根据客户提供的脱敏样本确定字段映射、编码、冲突处理规则和验收样本，再固定报价。该样例不是为某位客户完成的订单，也不承诺任何销售收入。
+## 验证
+
+```sh
+node --test merge.test.mjs audit.test.mjs
+node compare.mjs --self-test
+```
+
+公开版本已重新下载验证：6 项单元测试、对比自检、命令行输出保护及一键演示验收通过。
+
+## 定制询价
+
+可讨论字段映射、编码转换、合并去重、数据校验、快照核对和周期报告。小范围参考报价人民币 199–499 元，实际范围、验收、期限和付款方式须双方确认；开发使用 Codex，交付约定源码、说明和测试。周期任务可讨论按次或定期维护。
+
+通过上方定制需求入口提供文件格式、大致行数、处理规则和期望输出，仅附虚构或脱敏样本。当前没有自动下单或收款功能；报价不是已成交收入。
+
+## English
+
+Local CSV merge/deduplication, validation and snapshot comparison. Download the release ZIP and run `node demo.mjs demo-output` with Node.js 22+. The generated report and JSON use synthetic data. No third-party dependencies. Custom automation inquiries are welcome through Issues; scope, acceptance criteria, price and payment are agreed separately. Developed with Codex; no client experience or sales is claimed.
