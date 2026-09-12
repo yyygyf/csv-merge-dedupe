@@ -1,93 +1,67 @@
-# CSV 数据处理工具包与定制服务
+# CSV 数据处理工具包
 
-本仓库的独立命令行工具使用 Node.js 22+，无需第三方依赖；另提供需要 n8n 运行环境的工作流样例。开发使用 Codex；这是能力样例，不是客户成交案例。
+把多份 CSV 合并去重，找出异常记录，并比较两次导出之间的变化。适合订单、库存和名单核对；保留中文、前导零和组合编号。独立工具在本地运行，使用 Node.js 22+，无需第三方依赖。
 
-| 工具 | 适用问题 | 输出 |
+[下载 v0.2.0](https://github.com/yyygyf/csv-merge-dedupe/releases/tag/v0.2.0) · [n8n 工作流](n8n/README.md) · [定制询价](https://github.com/yyygyf/csv-merge-dedupe/issues/new?template=custom-work.md)
+
+## 先看效果
+
+从发布页下载 `csv-toolkit-v0.2.0.zip`，解压后双击 `example-output/audit.html` 或 `example-output/changes.html`，即可查看已生成的中文报告。查看样例无需安装 Node.js；样例中的订单全部为虚构。
+
+安装 Node.js 22+ 后，在解压目录重新生成报告：
+
+```sh
+node demo.mjs my-demo-output
+```
+
+输出目录必须尚不存在。演示将 4 条来源记录合并为 3 条，定位 1 条异常记录，并生成 HTML 与 JSON 变化清单：新增、删除、修改、未变各 1 条，订单 `002` 的金额由字符串 `200` 变为 `250`。
+
+GitHub 自动生成的 **Source code** 压缩包也包含全部工具；其中不附预生成报告，运行上述命令即可生成。
+
+## 处理自己的文件
+
+| 需要处理的问题 | 命令 | 结果 |
 | --- | --- | --- |
-| [合并去重](merge.mjs) | 同表头的多份 CSV 重复记录 | 合并 CSV 和终端统计 |
-| [数据体检](DATA-AUDIT.md) | 必填值、重复编号、数字格式、字段数异常 | 中文 HTML 报告 |
-| [快照对比](compare.mjs) | 两期订单、库存或名单变化 | 新增、删除、逐字段修改 JSON |
+| 合并同表头文件，以订单号去重 | `node merge.mjs 订单号 merged.csv january.csv february.csv` | CSV 与终端统计 |
+| 检查必填值、重复编号与数字格式 | `node audit.mjs orders.csv audit.html --required 客户,金额 --key 订单号 --numbers 金额` | 中文异常报告 |
+| 比较两期导出 | `node compare-report.mjs 订单号 before.csv after.csv changes.html` | 可打开、打印的变化报告 |
+| 供后续程序读取变化 | `node compare.mjs 订单号 before.csv after.csv changes.json` | 新增、删除与逐字段修改 JSON |
+| 转换已知 GBK 编码的 CSV | `node convert-encoding.mjs gbk source.csv utf8.csv` | UTF-8 CSV |
 
-[下载 v0.1.0](https://github.com/yyygyf/csv-merge-dedupe/releases/tag/v0.1.0) · [提交定制需求](https://github.com/yyygyf/csv-merge-dedupe/issues/new?template=custom-work.md)
+组合主键写为 `客户号,订单号`。合并保留首次出现的记录，要求相同表头及列顺序。对比允许列顺序不同，但要求列名集合一致，拒绝空键或重复键。所有工具保留字段原始字符串，不修改输入，也不覆盖已有输出。
 
-## n8n 工作流样例（main 分支新增）
+编码转换须显式选择 `utf-8`、`gbk`、`gb18030`、`utf-16le` 或 `utf-16be`，不会自动判断编码。请根据来源系统选择并抽样核对；输出使用 UTF-8 BOM 与 CRLF 行尾。其他工具直接读取 UTF-8。
 
-[下载工作流与查看说明](n8n/README.md)：把两期 CSV 按单一或组合主键核对，输出新增、删除和逐字段变化。样例已在 n8n 2.38.7 / Node.js 24.19.0 中实际导入并执行，附虚构订单、执行结果摘录和验证脚本；11 组代码检查及实际执行结果验收通过。无需第三方凭据，工作流本身没有外部请求；n8n 实例可能保存执行数据。此样例尚不包含在 v0.1.0 中，也不是客户生产部署案例。
+仅处理逗号分隔 CSV，全部内容在内存处理；不读取 XLSX、不计算金额、不自动修正业务数据或改变公式文本。Excel 打开 CSV 时仍可能自行改变数字格式。报告包含源字段值，分享实际数据前请脱敏。体检规则详见 [DATA-AUDIT.md](DATA-AUDIT.md)。
 
-English: an [importable n8n CSV snapshot demo](n8n/README.md) is available on main, with a recorded successful local execution and reproducible checks. Requires a separate n8n runtime. Synthetic data only; production integrations are scoped separately.
+## 接入 n8n
 
-## 一键试用
+导入 [n8n/csv-snapshot-demo.json](n8n/csv-snapshot-demo.json)，手动执行，再查看 **Compare snapshots → Output → JSON**。工作流接收 `beforeText`、`afterText` 和 `keys`，返回新增、删除及逐字段变化。
 
-下载发布页的 Source code (zip)，解压并进入该目录，运行：
+已在 n8n 2.38.7 / Node.js 24.19.0 / Windows x64 上实际通过 CLI 导入并执行，附运行记录与验证脚本。工作流无需凭据，没有外部请求；n8n 实例可能保存执行历史。每份快照上限为 100 万 UTF-16 码元、1 万条记录、100 列。二进制文件读取、定时任务和业务连接器需另行配置，详见 [完整步骤](n8n/README.md)。
 
-```sh
-node demo.mjs demo-output
-```
-
-全部输入为虚构订单数据。打开生成的 `demo-output/audit.html` 查看异常报告，`changes.json` 查看变化，`README.md` 查看验收结果。4 条来源记录合并为 3 条；体检定位 1 条异常记录；快照对比各有 1 条新增、删除、修改及未变记录。再次运行请换一个新输出目录。
-
-## 处理自己的 CSV
-
-```sh
-node merge.mjs 订单号 merged.csv january.csv february.csv
-node merge.mjs 客户号,订单号 merged.csv export1.csv export2.csv
-node audit.mjs orders.csv report.html --required 订单号,金额 --key 订单号 --numbers 金额
-node compare.mjs 订单号 before.csv after.csv changes.json
-```
-
-合并按原始字符串组合键保留首次记录，要求相同列名及顺序。快照对比允许列顺序不同，但要求列名集合一致，拒绝空键或重复键。工具保留前导零、中文、引号、逗号和字段内换行，不修改输入，不覆盖已有输出。
-
-所有内容在内存处理；仅支持逗号分隔的 UTF-8 CSV，不支持 XLSX/GBK，不自动解决业务冲突，不修改公式文本。Excel 自行打开 CSV 仍可能改变数字显示格式。JSON 对比输出包含原始字段值，分享前须脱敏。
-
-## 验证
+## 自行验证
 
 ```sh
 node --test merge.test.mjs audit.test.mjs
 node compare.mjs --self-test
+node compare-report.mjs --self-test
+node convert-encoding.mjs --self-test
+node n8n/verify.mjs n8n/sample-execution.json
 ```
 
-公开版本已重新下载验证：6 项单元测试、对比自检、命令行输出保护及一键演示验收通过。
+最后一条会验证工作流内的 JavaScript 和保存的执行结果，不会启动新的 n8n 实例。实际 n8n 重跑命令见工作流说明。
 
-## 定制询价
+## 定制与周期维护
 
-可讨论字段映射、编码转换、合并去重、数据校验、快照核对和周期报告。小范围参考报价人民币 199–499 元，实际范围、验收、期限和付款方式须双方确认；开发使用 Codex，交付约定源码、说明和测试。周期任务可讨论按次或定期维护。
+可按实际导出格式定制字段映射、去重保留规则、校验条件、n8n 流程及周期报告。小范围参考价人民币 **199–499 元**，先用虚构样本确定预期输出，再约定交付范围、验收、期限与付款方式。定期运行或维护按范围另行报价。
 
-通过上方定制需求入口提供文件格式、大致行数、处理规则和期望输出，仅附虚构或脱敏样本。当前没有自动下单或收款功能；报价不是已成交收入。
+[提交需求](https://github.com/yyygyf/csv-merge-dedupe/issues/new?template=custom-work.md)时，请附文件格式、大致行数、处理规则及 3–5 行虚构或脱敏样本。这里没有自动下单或收款功能。
+
+本工具由 Codex 开发，公开演示是能力样例，不是客户项目或成交证明。
 
 ## English
 
-Local CSV merge/deduplication, validation and snapshot comparison. Download the release ZIP and run `node demo.mjs demo-output` with Node.js 22+. The generated report and JSON use synthetic data. No third-party dependencies. Custom automation inquiries are welcome through Issues; scope, acceptance criteria, price and payment are agreed separately. Developed with Codex; no client experience or sales is claimed.
+A local CSV toolkit for merge/deduplication, data-quality checks, printable snapshot differences and explicit encoding conversion. Download `csv-toolkit-v0.2.0.zip` and open the HTML files under `example-output` to inspect synthetic examples. To reproduce them, install Node.js 22+ and run `node demo.mjs my-demo-output`. Standalone tools need no third-party dependencies.
 
-
-## 可读的变化报告（main 分支新增）
-
-`compare-report.mjs` 把两期 CSV 的新增、删除和逐字段修改生成可直接在浏览器打开、打印的中文 HTML。此工具尚不包含在 v0.1.0 发布压缩包中；请在仓库 Code 菜单下载当前 main 分支 ZIP，或克隆当前仓库后运行：
-
-```sh
-node demo.mjs demo-output
-node compare-report.mjs 订单号 demo-output/merged.csv demo-output/later.csv change-report.html
-node compare-report.mjs --self-test
-```
-
-打开 `change-report.html`，应看到前后各 3 条记录，新增、删除、修改、未变各 1 条；修改明细显示订单 002 的金额从 200 变成 250。这里全部是虚构样例。
-
-处理实际文件：`node compare-report.mjs 主键 before.csv after.csv report.html`。组合主键使用逗号分隔。规则与 JSON 对比相同，不覆盖现有输出；报告包含原始字段值，分享前须脱敏。工具比较字符串变化，不做金额汇总或业务正确性判断。
-
-English: the main branch also includes `compare-report.mjs`, a printable HTML snapshot-difference report. It is not included in the v0.1.0 ZIP. Use the current main branch and the example above. Reports contain source values; redact before sharing.
-
-
-## 中文导出文件的编码转换（main 分支新增）
-
-现有清洗和报告工具仍只读取 UTF-8 CSV。对于已知编码的其他 CSV，可先用 `convert-encoding.mjs` 转换；下载当前 main 分支，v0.1.0 不包含此文件。
-
-```sh
-node convert-encoding.mjs gbk source.csv utf8.csv
-node audit.mjs utf8.csv report.html --key id
-node convert-encoding.mjs --self-test
-```
-
-支持显式指定 `utf-8`、`gbk`、`gb18030`、`utf-16le`、`utf-16be`；输出带 BOM 的 UTF-8、CRLF 行尾和标准 CSV 引号。保留字段字符串，包括 001 这样的编号。所有内容在内存中处理，无第三方依赖。公开版本已通过编码自检及命令行转换、拒绝覆盖、原文件保持不变的检查。
-
-此工具不自动判断编码。错误的编码选择即使成功解码也可能产生乱码，请先确认来源系统的导出设置并抽样核对。发现 BOM 与选择冲突、非法字节、NUL、重复或空表头、字段数异常会报错，且不会创建输出；已有输出也会被拒绝。它不读取 XLSX，不修复业务数据，不改变公式文本。
-
-English: `convert-encoding.mjs` converts explicitly selected GBK/GB18030/UTF-16 CSV exports to UTF-8 before using the other tools. It does not detect encodings. Validate the selected encoding and inspect representative output rows. It preserves field strings, normalizes CSV serialization, and refuses existing output paths.
+An [n8n snapshot workflow](n8n/README.md) is included with a recorded successful local execution. It needs a separate n8n runtime. Custom automation and recurring-report inquiries are welcome through Issues; scope, acceptance, price and payment are agreed separately. Developed with Codex; the examples do not claim customer deployments or earnings.
