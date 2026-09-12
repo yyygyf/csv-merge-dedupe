@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="在浏览器中比较两份 CSV 导出，找出新增、移除和字段变化。文件在本页处理，支持下载报告与定制自动化。">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; worker-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'">
+  <meta name="color-scheme" content="light">
+  <title>CSV 快照对比 · 看清每次导出的变化</title>
+  <link rel="stylesheet" href="web-style.css">
+  <script type="module" src="web-app.mjs"></script>
+</head>
+<body>
+  <a class="skip" href="#workspace">跳到文件对比</a>
+  <header class="site-header wrap">
+    <a class="brand" href="./"><span class="brand-mark" aria-hidden="true">↔</span><span>CSV <b>快照对比</b></span></a>
+    <nav aria-label="主导航"><a href="#how">使用说明</a><a href="https://github.com/yyygyf/csv-merge-dedupe">源码与工具包 <span aria-hidden="true">↗</span></a></nav>
+  </header>
+  <main class="wrap">
+    <section class="hero">
+      <div><p class="eyebrow"><span class="dot"></span> 订单 · 库存 · 名单</p><h1>两份导出，<br>变化一眼看清。</h1><p class="intro">按编号配对，逐项找出新增、移除和字段变化。<br class="desktop-break">不用装软件，也不用逐行找不同。</p></div>
+      <div class="hero-aside"><span class="local-badge">文件在本页处理</span><p>无需账号 · 不上传文件内容<br>用一组虚构订单，先试试效果。</p><button id="sample" class="button secondary" type="button">试用示例 <span aria-hidden="true">↘</span></button></div>
+    </section>
+    <section id="workspace" class="workspace" aria-labelledby="workspace-title">
+      <div class="section-heading"><div><span class="step">01</span><h2 id="workspace-title">放入两份 CSV</h2></div><button id="clear" class="text-button" type="button">清空本次数据</button></div>
+      <div class="file-grid">
+        <div class="file-box">
+          <label class="file-target" for="before-file"><span class="file-tag">上期 / BEFORE</span><span class="file-icon" aria-hidden="true">＋</span><strong id="before-name">选择上期文件</strong><span id="before-meta" class="file-meta">点击选择 .csv 文件</span><input id="before-file" type="file" accept=".csv,text/csv" aria-label="选择上期 CSV 文件"></label>
+          <div class="encoding"><label for="before-encoding">文件编码</label><select id="before-encoding"><option value="utf-8">UTF-8（默认）</option><option value="gbk">GBK</option><option value="gb18030">GB18030</option><option value="utf-16le">UTF-16 LE</option><option value="utf-16be">UTF-16 BE</option></select></div>
+        </div>
+        <div class="file-box">
+          <label class="file-target" for="after-file"><span class="file-tag">本期 / AFTER</span><span class="file-icon" aria-hidden="true">＋</span><strong id="after-name">选择本期文件</strong><span id="after-meta" class="file-meta">点击选择 .csv 文件</span><input id="after-file" type="file" accept=".csv,text/csv" aria-label="选择本期 CSV 文件"></label>
+          <div class="encoding"><label for="after-encoding">文件编码</label><select id="after-encoding"><option value="utf-8">UTF-8（默认）</option><option value="gbk">GBK</option><option value="gb18030">GB18030</option><option value="utf-16le">UTF-16 LE</option><option value="utf-16be">UTF-16 BE</option></select></div>
+        </div>
+      </div>
+      <p class="limits">每份 ≤ 1 MB、10,000 条记录、100 列。支持逗号分隔的 CSV；不读取 XLSX。</p>
+      <div class="key-area">
+        <div class="key-heading"><div><span class="step">02</span><h2>选择配对编号</h2></div><p>可组合多列；编号必须非空且不重复。</p></div>
+        <fieldset id="key-options" disabled><legend class="sr-only">用于配对的编号列</legend><p id="key-placeholder">选择两份文件后，这里会显示可用列名。</p><div id="key-list"></div></fieldset>
+      </div>
+      <div class="run-row"><button id="compare" class="button primary" type="button" disabled>开始对比 <span aria-hidden="true">→</span></button><button id="cancel" class="text-button" type="button" hidden>停止处理</button><p id="notice" role="status" aria-live="polite">选择文件，或点击「试用示例」。</p></div>
+    </section>
+    <section id="results" class="results" aria-labelledby="results-title" hidden>
+      <div class="section-heading result-heading"><div><span class="step">03</span><h2 id="results-title">变化报告</h2></div><span id="result-source" class="source-label"></span></div>
+      <div id="stats" class="stats"></div>
+      <div class="details-card">
+        <div class="table-toolbar"><div class="view-buttons" role="group" aria-label="变化类别"><button type="button" data-view="changed" aria-pressed="true">修改明细</button><button type="button" data-view="added" aria-pressed="false">新增记录</button><button type="button" data-view="removed" aria-pressed="false">移除记录</button></div><div class="downloads"><button id="download-json" class="text-button" type="button">下载 JSON</button><button id="download-html" class="text-button" type="button">下载完整报告 ↗</button></div></div>
+        <p id="table-note" class="table-note"></p><div id="table-container" class="table-scroll" tabindex="0" role="region" aria-label="变化明细表格"></div>
+        <div class="pagination"><span id="page-info"></span><div><button id="previous" type="button" class="page-button" aria-label="上一页">←</button><button id="next" type="button" class="page-button" aria-label="下一页">→</button></div></div>
+      </div>
+      <p class="report-note">字段按原文本比较，例如 1.00 与 1 会记为变化；不计算金额或判断业务是否正确。报告含原始字段值，分享前请脱敏。完整 HTML 报告可在浏览器中打印为 PDF。</p>
+    </section>
+    <section class="bottom-grid" id="how">
+      <div class="how"><p class="eyebrow">从一次检查，到日常核对</p><h2>把手工核对，<br>变成可重复的流程。</h2><p>需要匹配不同系统的字段、保留特定记录，<br>或定期收到一份变化报告？可以按实际规则定制。</p><a class="button secondary" href="mailto:pb21061351@163.com?subject=CSV%20%E5%AE%9A%E5%88%B6%E8%AF%A2%E4%BB%B7">联系定制 <span aria-hidden="true">↗</span></a><small>小范围参考价 ¥199–499，具体按范围约定。<br>来信说明导出格式、数据量和预期规则即可。</small></div>
+      <div class="faq"><details open><summary>怎样选编号列？</summary><p>用能唯一代表一条记录的列，例如订单号。如果同一客户有多个订单，可选择「客户号 + 订单号」。先选择编号，不会自动合并重号。</p></details><details><summary>为什么提示无法比较？</summary><p>两份文件须包含相同列名，顺序可以不同。请检查重复或空编号、缺少字段、CSV 引号和文件编码。中文乱码时按来源系统选择编码；系统不会自动猜测。</p></details><details><summary>文件会保存在哪里？</summary><p>文件内容只在当前页面内存中处理，不上传、不写入浏览器长期存储。清空或关闭页面后结束本次处理。自行下载的报告由浏览器保存；打开网页时托管服务仍会收到普通访问请求。</p></details><details><summary>超过演示上限怎么办？</summary><p>可以下载源码中的本地命令行工具，或按数据规模商定处理方案。工具包另含合并去重、数据体检、编码转换及 n8n 工作流。</p></details></div>
+    </section>
+  </main>
+  <footer class="wrap"><span>yyygyf / CSV 工具包</span><span>由 Codex 在账号授权下开发 · 示例数据为虚构</span><a href="https://github.com/yyygyf/csv-merge-dedupe/issues/new?template=custom-work.md">提交定制需求 ↗</a></footer>
+  <noscript><p class="wrap">请启用 JavaScript 才能在本页处理 CSV。也可从源码仓库下载本地命令行工具。</p></noscript>
+</body>
+</html>

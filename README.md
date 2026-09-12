@@ -2,9 +2,15 @@
 
 把多份 CSV 合并去重，找出异常记录，并比较两次导出之间的变化。适合订单、库存和名单核对；保留中文、前导零和组合编号。独立工具在本地运行，使用 Node.js 22+，无需第三方依赖。
 
-[下载 v0.2.0](https://github.com/yyygyf/csv-merge-dedupe/releases/tag/v0.2.0) · [n8n 工作流](n8n/README.md) · [定制询价](https://github.com/yyygyf/csv-merge-dedupe/issues/new?template=custom-work.md)
+[在线试用](https://yyygyf.github.io/csv-merge-dedupe/) · [下载 v0.2.0](https://github.com/yyygyf/csv-merge-dedupe/releases/tag/v0.2.0) · [n8n 工作流](n8n/README.md) · [定制询价](https://github.com/yyygyf/csv-merge-dedupe/issues/new?template=custom-work.md)
 
 ## 先看效果
+
+打开 [CSV 快照对比网页](https://yyygyf.github.io/csv-merge-dedupe/)，点击「试用示例」或选择两份 CSV，确认配对编号后开始对比。无需安装；文件内容在当前页面内存处理，不上传，不写入浏览器长期存储。可查看分页明细并下载完整 JSON / HTML 报告。
+
+网页每份文件上限 1 MB（1,000,000 字节）、10,000 条记录、100 列，支持显式选择 UTF-8、GBK、GB18030、UTF-16 LE / BE。清空、关闭或重新加载页面结束本次处理；自行下载的报告由浏览器保存。普通网页访问请求仍会到达 GitHub Pages。网页说明与复现测试见 [WEB-DEMO.md](WEB-DEMO.md)。
+
+网页是 v0.2.0 发布后的新增功能；以下固定版本 ZIP 仍是本地工具包。
 
 从发布页下载 `csv-toolkit-v0.2.0.zip`，解压后双击 `example-output/audit.html` 或 `example-output/changes.html`，即可查看已生成的中文报告。查看样例无需安装 Node.js；样例中的订单全部为虚构。
 
@@ -63,5 +69,7 @@ node n8n/verify.mjs n8n/sample-execution.json
 ## English
 
 A local CSV toolkit for merge/deduplication, data-quality checks, printable snapshot differences and explicit encoding conversion. Download `csv-toolkit-v0.2.0.zip` and open the HTML files under `example-output` to inspect synthetic examples. To reproduce them, install Node.js 22+ and run `node demo.mjs my-demo-output`. Standalone tools need no third-party dependencies.
+
+The [browser demo](https://yyygyf.github.io/csv-merge-dedupe/) compares two CSV files without installation. File contents stay in the current page's memory; no data uploads, analytics or persistent browser storage. Limits per file: 1,000,000 bytes, 10,000 records and 100 columns. Reports include source field values. See [WEB-DEMO.md](WEB-DEMO.md) for behavior and reproducible checks.
 
 An [n8n snapshot workflow](n8n/README.md) is included with a recorded successful local execution. It needs a separate n8n runtime. Custom automation and recurring-report inquiries are welcome through Issues; scope, acceptance, price and payment are agreed separately. Developed with Codex; the examples do not claim customer deployments or earnings.
