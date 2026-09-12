@@ -1,6 +1,6 @@
 # CSV 数据处理工具包与定制服务
 
-本仓库提供三类本地工具，使用 Node.js 22+，无需第三方依赖。开发使用 Codex；这是能力样例，不是客户成交案例。
+本仓库的独立命令行工具使用 Node.js 22+，无需第三方依赖；另提供需要 n8n 运行环境的工作流样例。开发使用 Codex；这是能力样例，不是客户成交案例。
 
 | 工具 | 适用问题 | 输出 |
 | --- | --- | --- |
@@ -9,6 +9,12 @@
 | [快照对比](compare.mjs) | 两期订单、库存或名单变化 | 新增、删除、逐字段修改 JSON |
 
 [下载 v0.1.0](https://github.com/yyygyf/csv-merge-dedupe/releases/tag/v0.1.0) · [提交定制需求](https://github.com/yyygyf/csv-merge-dedupe/issues/new?template=custom-work.md)
+
+## n8n 工作流样例（main 分支新增）
+
+[下载工作流与查看说明](n8n/README.md)：把两期 CSV 按单一或组合主键核对，输出新增、删除和逐字段变化。样例已在 n8n 2.38.7 / Node.js 24.19.0 中实际导入并执行，附虚构订单、执行结果摘录和验证脚本；11 组代码检查及实际执行结果验收通过。无需第三方凭据，工作流本身没有外部请求；n8n 实例可能保存执行数据。此样例尚不包含在 v0.1.0 中，也不是客户生产部署案例。
+
+English: an [importable n8n CSV snapshot demo](n8n/README.md) is available on main, with a recorded successful local execution and reproducible checks. Requires a separate n8n runtime. Synthetic data only; production integrations are scoped separately.
 
 ## 一键试用
 
