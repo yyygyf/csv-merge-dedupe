@@ -1,0 +1,140 @@
+{
+  "mode": "cli",
+  "startedAt": "2026-09-12T18:15:14.780Z",
+  "stoppedAt": "2026-09-12T18:15:16.365Z",
+  "status": "success",
+  "finished": true,
+  "data": {
+    "resultData": {
+      "runData": {
+        "Manual Trigger": [
+          {
+            "startTime": 1789236914784,
+            "executionIndex": 0,
+            "source": [],
+            "hints": [],
+            "executionTime": 1,
+            "executionStatus": "success",
+            "data": {
+              "main": [
+                [
+                  {
+                    "json": {},
+                    "pairedItem": {
+                      "item": 0
+                    }
+                  }
+                ]
+              ]
+            }
+          }
+        ],
+        "Synthetic snapshots": [
+          {
+            "startTime": 1789236914786,
+            "executionIndex": 1,
+            "source": [
+              {
+                "previousNode": "Manual Trigger",
+                "previousNodeOutput": 0,
+                "previousNodeRun": 0
+              }
+            ],
+            "hints": [],
+            "executionTime": 1568,
+            "executionStatus": "success",
+            "data": {
+              "main": [
+                [
+                  {
+                    "json": {
+                      "beforeText": "订单号,客户,金额,备注\r\n001,示例甲,100,保持不变\r\n002,示例乙,200,\"加急,请核对\"\r\n003,示例丙,300,已取消\r\n",
+                      "afterText": "备注,金额,客户,订单号\r\n保持不变,100,示例甲,001\r\n\"加急,请核对\",250,示例乙,002\r\n新增订单,400,示例丁,004\r\n",
+                      "keys": [
+                        "订单号"
+                      ]
+                    },
+                    "pairedItem": {
+                      "item": 0
+                    }
+                  }
+                ]
+              ]
+            }
+          }
+        ],
+        "Compare snapshots": [
+          {
+            "startTime": 1789236916354,
+            "executionIndex": 2,
+            "source": [
+              {
+                "previousNode": "Synthetic snapshots",
+                "previousNodeOutput": 0,
+                "previousNodeRun": 0
+              }
+            ],
+            "hints": [],
+            "executionTime": 11,
+            "executionStatus": "success",
+            "data": {
+              "main": [
+                [
+                  {
+                    "json": {
+                      "schemaVersion": "1.0",
+                      "keys": [
+                        "订单号"
+                      ],
+                      "summary": {
+                        "before": 3,
+                        "after": 3,
+                        "added": 1,
+                        "removed": 1,
+                        "changed": 1,
+                        "unchanged": 1
+                      },
+                      "added": [
+                        {
+                          "备注": "新增订单",
+                          "金额": "400",
+                          "客户": "示例丁",
+                          "订单号": "004"
+                        }
+                      ],
+                      "removed": [
+                        {
+                          "订单号": "003",
+                          "客户": "示例丙",
+                          "金额": "300",
+                          "备注": "已取消"
+                        }
+                      ],
+                      "changed": [
+                        {
+                          "key": {
+                            "订单号": "002"
+                          },
+                          "fields": [
+                            {
+                              "column": "金额",
+                              "before": "200",
+                              "after": "250"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    "pairedItem": {
+                      "item": 0
+                    }
+                  }
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  }
+}
