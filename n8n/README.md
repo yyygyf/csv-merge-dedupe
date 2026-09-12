@@ -4,7 +4,7 @@ A runnable example for comparing two order, inventory or membership exports by a
 
 ## Try the workflow
 
-1. Download [csv-snapshot-demo.json](csv-snapshot-demo.json) from the current main branch. It is **not in the v0.1.0 release**.
+1. Download [csv-snapshot-demo.json](csv-snapshot-demo.json) from this repository or the [v0.2.0 release](https://github.com/yyygyf/csv-merge-dedupe/releases/tag/v0.2.0). The earlier v0.1.0 release does not contain this workflow.
 2. In your n8n editor, import the workflow JSON from a file. Review the three connected nodes and the instruction note, then execute the workflow manually.
 3. Open **Compare snapshots → Output → JSON**. The expected counts are:
 
